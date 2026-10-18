@@ -1,0 +1,1100 @@
+{
+  "info": {
+    "name": "ЛР 4 — Взаимодействие двух сервисов",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8082",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Запросы к Сервису 1 → Сервису 2",
+      "item": [
+        {
+          "name": "01 Успешный запрос",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', function () { pm.response.to.have.status(200); });",
+                  "const body = pm.response.json();",
+                  "pm.test('errorCode', function () { pm.expect(body.errorCode).to.eql(''); });",
+                  "pm.test('code', function () { pm.expect(body.code).to.eql('success'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"uid\": \"1\",\r\n  \"operationUid\": \"operation-1\",\r\n  \"systemName\": \"CRM\",\r\n  \"systemTime\": \"2026-10-16T10:00:00Z\",\r\n  \"source\": \"lab2\",\r\n  \"communicationId\": 1,\r\n  \"templateId\": 1,\r\n  \"productCode\": 1,\r\n  \"smsCode\": 1234\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/feedback",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
+          "name": "uid — поле отсутствует",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 400', function () { pm.response.to.have.status(400); });",
+                  "const body = pm.response.json();",
+                  "pm.test('errorCode', function () { pm.expect(body.errorCode).to.eql('ValidationException'); });",
+                  "pm.test('code', function () { pm.expect(body.code).to.eql('failed'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"operationUid\": \"operation-1\",\r\n  \"systemName\": \"CRM\",\r\n  \"systemTime\": \"2026-10-16T10:00:00Z\",\r\n  \"source\": \"lab2\",\r\n  \"communicationId\": 1,\r\n  \"templateId\": 1,\r\n  \"productCode\": 1,\r\n  \"smsCode\": 1234\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/feedback",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
+          "name": "uid — null",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 400', function () { pm.response.to.have.status(400); });",
+                  "const body = pm.response.json();",
+                  "pm.test('errorCode', function () { pm.expect(body.errorCode).to.eql('ValidationException'); });",
+                  "pm.test('code', function () { pm.expect(body.code).to.eql('failed'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"uid\": null,\r\n  \"operationUid\": \"operation-1\",\r\n  \"systemName\": \"CRM\",\r\n  \"systemTime\": \"2026-10-16T10:00:00Z\",\r\n  \"source\": \"lab2\",\r\n  \"communicationId\": 1,\r\n  \"templateId\": 1,\r\n  \"productCode\": 1,\r\n  \"smsCode\": 1234\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/feedback",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
+          "name": "uid — пустая строка",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 400', function () { pm.response.to.have.status(400); });",
+                  "const body = pm.response.json();",
+                  "pm.test('errorCode', function () { pm.expect(body.errorCode).to.eql('ValidationException'); });",
+                  "pm.test('code', function () { pm.expect(body.code).to.eql('failed'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"uid\": \"\",\r\n  \"operationUid\": \"operation-1\",\r\n  \"systemName\": \"CRM\",\r\n  \"systemTime\": \"2026-10-16T10:00:00Z\",\r\n  \"source\": \"lab2\",\r\n  \"communicationId\": 1,\r\n  \"templateId\": 1,\r\n  \"productCode\": 1,\r\n  \"smsCode\": 1234\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/feedback",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
+          "name": "uid — пробелы",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 400', function () { pm.response.to.have.status(400); });",
+                  "const body = pm.response.json();",
+                  "pm.test('errorCode', function () { pm.expect(body.errorCode).to.eql('ValidationException'); });",
+                  "pm.test('code', function () { pm.expect(body.code).to.eql('failed'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"uid\": \"   \",\r\n  \"operationUid\": \"operation-1\",\r\n  \"systemName\": \"CRM\",\r\n  \"systemTime\": \"2026-10-16T10:00:00Z\",\r\n  \"source\": \"lab2\",\r\n  \"communicationId\": 1,\r\n  \"templateId\": 1,\r\n  \"productCode\": 1,\r\n  \"smsCode\": 1234\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/feedback",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
+          "name": "operationUid — поле отсутствует",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 400', function () { pm.response.to.have.status(400); });",
+                  "const body = pm.response.json();",
+                  "pm.test('errorCode', function () { pm.expect(body.errorCode).to.eql('ValidationException'); });",
+                  "pm.test('code', function () { pm.expect(body.code).to.eql('failed'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"uid\": \"1\",\r\n  \"systemName\": \"CRM\",\r\n  \"systemTime\": \"2026-10-16T10:00:00Z\",\r\n  \"source\": \"lab2\",\r\n  \"communicationId\": 1,\r\n  \"templateId\": 1,\r\n  \"productCode\": 1,\r\n  \"smsCode\": 1234\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/feedback",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
+          "name": "operationUid — null",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 400', function () { pm.response.to.have.status(400); });",
+                  "const body = pm.response.json();",
+                  "pm.test('errorCode', function () { pm.expect(body.errorCode).to.eql('ValidationException'); });",
+                  "pm.test('code', function () { pm.expect(body.code).to.eql('failed'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"uid\": \"1\",\r\n  \"operationUid\": null,\r\n  \"systemName\": \"CRM\",\r\n  \"systemTime\": \"2026-10-16T10:00:00Z\",\r\n  \"source\": \"lab2\",\r\n  \"communicationId\": 1,\r\n  \"templateId\": 1,\r\n  \"productCode\": 1,\r\n  \"smsCode\": 1234\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/feedback",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
+          "name": "operationUid — пустая строка",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 400', function () { pm.response.to.have.status(400); });",
+                  "const body = pm.response.json();",
+                  "pm.test('errorCode', function () { pm.expect(body.errorCode).to.eql('ValidationException'); });",
+                  "pm.test('code', function () { pm.expect(body.code).to.eql('failed'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"uid\": \"1\",\r\n  \"operationUid\": \"\",\r\n  \"systemName\": \"CRM\",\r\n  \"systemTime\": \"2026-10-16T10:00:00Z\",\r\n  \"source\": \"lab2\",\r\n  \"communicationId\": 1,\r\n  \"templateId\": 1,\r\n  \"productCode\": 1,\r\n  \"smsCode\": 1234\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/feedback",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
+          "name": "operationUid — пробелы",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 400', function () { pm.response.to.have.status(400); });",
+                  "const body = pm.response.json();",
+                  "pm.test('errorCode', function () { pm.expect(body.errorCode).to.eql('ValidationException'); });",
+                  "pm.test('code', function () { pm.expect(body.code).to.eql('failed'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"uid\": \"1\",\r\n  \"operationUid\": \"   \",\r\n  \"systemName\": \"CRM\",\r\n  \"systemTime\": \"2026-10-16T10:00:00Z\",\r\n  \"source\": \"lab2\",\r\n  \"communicationId\": 1,\r\n  \"templateId\": 1,\r\n  \"productCode\": 1,\r\n  \"smsCode\": 1234\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/feedback",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
+          "name": "systemTime — поле отсутствует",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 400', function () { pm.response.to.have.status(400); });",
+                  "const body = pm.response.json();",
+                  "pm.test('errorCode', function () { pm.expect(body.errorCode).to.eql('ValidationException'); });",
+                  "pm.test('code', function () { pm.expect(body.code).to.eql('failed'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"uid\": \"1\",\r\n  \"operationUid\": \"operation-1\",\r\n  \"systemName\": \"CRM\",\r\n  \"source\": \"lab2\",\r\n  \"communicationId\": 1,\r\n  \"templateId\": 1,\r\n  \"productCode\": 1,\r\n  \"smsCode\": 1234\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/feedback",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
+          "name": "systemTime — null",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 400', function () { pm.response.to.have.status(400); });",
+                  "const body = pm.response.json();",
+                  "pm.test('errorCode', function () { pm.expect(body.errorCode).to.eql('ValidationException'); });",
+                  "pm.test('code', function () { pm.expect(body.code).to.eql('failed'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"uid\": \"1\",\r\n  \"operationUid\": \"operation-1\",\r\n  \"systemName\": \"CRM\",\r\n  \"systemTime\": null,\r\n  \"source\": \"lab2\",\r\n  \"communicationId\": 1,\r\n  \"templateId\": 1,\r\n  \"productCode\": 1,\r\n  \"smsCode\": 1234\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/feedback",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
+          "name": "systemTime — пустая строка",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 400', function () { pm.response.to.have.status(400); });",
+                  "const body = pm.response.json();",
+                  "pm.test('errorCode', function () { pm.expect(body.errorCode).to.eql('ValidationException'); });",
+                  "pm.test('code', function () { pm.expect(body.code).to.eql('failed'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"uid\": \"1\",\r\n  \"operationUid\": \"operation-1\",\r\n  \"systemName\": \"CRM\",\r\n  \"systemTime\": \"\",\r\n  \"source\": \"lab2\",\r\n  \"communicationId\": 1,\r\n  \"templateId\": 1,\r\n  \"productCode\": 1,\r\n  \"smsCode\": 1234\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/feedback",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
+          "name": "systemTime — пробелы",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 400', function () { pm.response.to.have.status(400); });",
+                  "const body = pm.response.json();",
+                  "pm.test('errorCode', function () { pm.expect(body.errorCode).to.eql('ValidationException'); });",
+                  "pm.test('code', function () { pm.expect(body.code).to.eql('failed'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"uid\": \"1\",\r\n  \"operationUid\": \"operation-1\",\r\n  \"systemName\": \"CRM\",\r\n  \"systemTime\": \"   \",\r\n  \"source\": \"lab2\",\r\n  \"communicationId\": 1,\r\n  \"templateId\": 1,\r\n  \"productCode\": 1,\r\n  \"smsCode\": 1234\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/feedback",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
+          "name": "uid — 32 символа допустимы",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', function () { pm.response.to.have.status(200); });",
+                  "const body = pm.response.json();",
+                  "pm.test('errorCode', function () { pm.expect(body.errorCode).to.eql(''); });",
+                  "pm.test('code', function () { pm.expect(body.code).to.eql('success'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"uid\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\r\n  \"operationUid\": \"operation-1\",\r\n  \"systemName\": \"CRM\",\r\n  \"systemTime\": \"2026-10-16T10:00:00Z\",\r\n  \"source\": \"lab2\",\r\n  \"communicationId\": 1,\r\n  \"templateId\": 1,\r\n  \"productCode\": 1,\r\n  \"smsCode\": 1234\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/feedback",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
+          "name": "uid — 33 символа",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 400', function () { pm.response.to.have.status(400); });",
+                  "const body = pm.response.json();",
+                  "pm.test('errorCode', function () { pm.expect(body.errorCode).to.eql('ValidationException'); });",
+                  "pm.test('code', function () { pm.expect(body.code).to.eql('failed'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"uid\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\r\n  \"operationUid\": \"operation-1\",\r\n  \"systemName\": \"CRM\",\r\n  \"systemTime\": \"2026-10-16T10:00:00Z\",\r\n  \"source\": \"lab2\",\r\n  \"communicationId\": 1,\r\n  \"templateId\": 1,\r\n  \"productCode\": 1,\r\n  \"smsCode\": 1234\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/feedback",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
+          "name": "operationUid — 32 символа допустимы",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', function () { pm.response.to.have.status(200); });",
+                  "const body = pm.response.json();",
+                  "pm.test('errorCode', function () { pm.expect(body.errorCode).to.eql(''); });",
+                  "pm.test('code', function () { pm.expect(body.code).to.eql('success'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"uid\": \"1\",\r\n  \"operationUid\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\r\n  \"systemName\": \"CRM\",\r\n  \"systemTime\": \"2026-10-16T10:00:00Z\",\r\n  \"source\": \"lab2\",\r\n  \"communicationId\": 1,\r\n  \"templateId\": 1,\r\n  \"productCode\": 1,\r\n  \"smsCode\": 1234\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/feedback",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
+          "name": "operationUid — 33 символа",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 400', function () { pm.response.to.have.status(400); });",
+                  "const body = pm.response.json();",
+                  "pm.test('errorCode', function () { pm.expect(body.errorCode).to.eql('ValidationException'); });",
+                  "pm.test('code', function () { pm.expect(body.code).to.eql('failed'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"uid\": \"1\",\r\n  \"operationUid\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\r\n  \"systemName\": \"CRM\",\r\n  \"systemTime\": \"2026-10-16T10:00:00Z\",\r\n  \"source\": \"lab2\",\r\n  \"communicationId\": 1,\r\n  \"templateId\": 1,\r\n  \"productCode\": 1,\r\n  \"smsCode\": 1234\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/feedback",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
+          "name": "communicationId — отсутствует",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 400', function () { pm.response.to.have.status(400); });",
+                  "const body = pm.response.json();",
+                  "pm.test('errorCode', function () { pm.expect(body.errorCode).to.eql('ValidationException'); });",
+                  "pm.test('code', function () { pm.expect(body.code).to.eql('failed'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"uid\": \"1\",\r\n  \"operationUid\": \"operation-1\",\r\n  \"systemName\": \"CRM\",\r\n  \"systemTime\": \"2026-10-16T10:00:00Z\",\r\n  \"source\": \"lab2\",\r\n  \"templateId\": 1,\r\n  \"productCode\": 1,\r\n  \"smsCode\": 1234\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/feedback",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
+          "name": "communicationId — 0",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 400', function () { pm.response.to.have.status(400); });",
+                  "const body = pm.response.json();",
+                  "pm.test('errorCode', function () { pm.expect(body.errorCode).to.eql('ValidationException'); });",
+                  "pm.test('code', function () { pm.expect(body.code).to.eql('failed'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"uid\": \"1\",\r\n  \"operationUid\": \"operation-1\",\r\n  \"systemName\": \"CRM\",\r\n  \"systemTime\": \"2026-10-16T10:00:00Z\",\r\n  \"source\": \"lab2\",\r\n  \"communicationId\": 0,\r\n  \"templateId\": 1,\r\n  \"productCode\": 1,\r\n  \"smsCode\": 1234\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/feedback",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
+          "name": "communicationId — отрицательное число",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 400', function () { pm.response.to.have.status(400); });",
+                  "const body = pm.response.json();",
+                  "pm.test('errorCode', function () { pm.expect(body.errorCode).to.eql('ValidationException'); });",
+                  "pm.test('code', function () { pm.expect(body.code).to.eql('failed'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"uid\": \"1\",\r\n  \"operationUid\": \"operation-1\",\r\n  \"systemName\": \"CRM\",\r\n  \"systemTime\": \"2026-10-16T10:00:00Z\",\r\n  \"source\": \"lab2\",\r\n  \"communicationId\": -1,\r\n  \"templateId\": 1,\r\n  \"productCode\": 1,\r\n  \"smsCode\": 1234\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/feedback",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
+          "name": "communicationId — 100001",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 400', function () { pm.response.to.have.status(400); });",
+                  "const body = pm.response.json();",
+                  "pm.test('errorCode', function () { pm.expect(body.errorCode).to.eql('ValidationException'); });",
+                  "pm.test('code', function () { pm.expect(body.code).to.eql('failed'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"uid\": \"1\",\r\n  \"operationUid\": \"operation-1\",\r\n  \"systemName\": \"CRM\",\r\n  \"systemTime\": \"2026-10-16T10:00:00Z\",\r\n  \"source\": \"lab2\",\r\n  \"communicationId\": 100001,\r\n  \"templateId\": 1,\r\n  \"productCode\": 1,\r\n  \"smsCode\": 1234\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/feedback",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
+          "name": "communicationId — минимум 1",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', function () { pm.response.to.have.status(200); });",
+                  "const body = pm.response.json();",
+                  "pm.test('errorCode', function () { pm.expect(body.errorCode).to.eql(''); });",
+                  "pm.test('code', function () { pm.expect(body.code).to.eql('success'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"uid\": \"1\",\r\n  \"operationUid\": \"operation-1\",\r\n  \"systemName\": \"CRM\",\r\n  \"systemTime\": \"2026-10-16T10:00:00Z\",\r\n  \"source\": \"lab2\",\r\n  \"communicationId\": 1,\r\n  \"templateId\": 1,\r\n  \"productCode\": 1,\r\n  \"smsCode\": 1234\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/feedback",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
+          "name": "communicationId — максимум 100000",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', function () { pm.response.to.have.status(200); });",
+                  "const body = pm.response.json();",
+                  "pm.test('errorCode', function () { pm.expect(body.errorCode).to.eql(''); });",
+                  "pm.test('code', function () { pm.expect(body.code).to.eql('success'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"uid\": \"1\",\r\n  \"operationUid\": \"operation-1\",\r\n  \"systemName\": \"CRM\",\r\n  \"systemTime\": \"2026-10-16T10:00:00Z\",\r\n  \"source\": \"lab2\",\r\n  \"communicationId\": 100000,\r\n  \"templateId\": 1,\r\n  \"productCode\": 1,\r\n  \"smsCode\": 1234\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/feedback",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
+          "name": "Все обязательные поля невалидны",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 400', function () { pm.response.to.have.status(400); });",
+                  "const body = pm.response.json();",
+                  "pm.test('errorCode', function () { pm.expect(body.errorCode).to.eql('ValidationException'); });",
+                  "pm.test('code', function () { pm.expect(body.code).to.eql('failed'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"uid\": \"\",\r\n  \"operationUid\": \"\",\r\n  \"systemName\": \"CRM\",\r\n  \"systemTime\": \"\",\r\n  \"source\": \"lab2\",\r\n  \"communicationId\": 0,\r\n  \"templateId\": 1,\r\n  \"productCode\": 1,\r\n  \"smsCode\": 1234\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/feedback",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
+          "name": "Оба идентификатора длиннее 32 символов",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 400', function () { pm.response.to.have.status(400); });",
+                  "const body = pm.response.json();",
+                  "pm.test('errorCode', function () { pm.expect(body.errorCode).to.eql('ValidationException'); });",
+                  "pm.test('code', function () { pm.expect(body.code).to.eql('failed'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"uid\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\r\n  \"operationUid\": \"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\",\r\n  \"systemName\": \"CRM\",\r\n  \"systemTime\": \"2026-10-16T10:00:00Z\",\r\n  \"source\": \"lab2\",\r\n  \"communicationId\": 1,\r\n  \"templateId\": 1,\r\n  \"productCode\": 1,\r\n  \"smsCode\": 1234\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/feedback",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
+          "name": "Необязательные поля отсутствуют",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', function () { pm.response.to.have.status(200); });",
+                  "const body = pm.response.json();",
+                  "pm.test('errorCode', function () { pm.expect(body.errorCode).to.eql(''); });",
+                  "pm.test('code', function () { pm.expect(body.code).to.eql('success'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"uid\": \"1\",\r\n  \"operationUid\": \"operation-1\",\r\n  \"systemTime\": \"2026-10-16T10:00:00Z\",\r\n  \"communicationId\": 1\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/feedback",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
+          "name": "uid 123 — UnsupportedCodeException",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 400', function () { pm.response.to.have.status(400); });",
+                  "const body = pm.response.json();",
+                  "pm.test('errorCode', function () { pm.expect(body.errorCode).to.eql('UnsupportedCodeException'); });",
+                  "pm.test('code', function () { pm.expect(body.code).to.eql('failed'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"uid\": \"123\",\r\n  \"operationUid\": \"operation-1\",\r\n  \"systemName\": \"CRM\",\r\n  \"systemTime\": \"2026-10-16T10:00:00Z\",\r\n  \"source\": \"lab2\",\r\n  \"communicationId\": 1,\r\n  \"templateId\": 1,\r\n  \"productCode\": 1,\r\n  \"smsCode\": 1234\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/feedback",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
+          "name": "systemName — ERP",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', function () { pm.response.to.have.status(200); });",
+                  "const body = pm.response.json();",
+                  "pm.test('errorCode', function () { pm.expect(body.errorCode).to.eql(''); });",
+                  "pm.test('code', function () { pm.expect(body.code).to.eql('success'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"uid\": \"1\",\r\n  \"operationUid\": \"operation-1\",\r\n  \"systemName\": \"ERP\",\r\n  \"systemTime\": \"2026-10-16T10:00:00Z\",\r\n  \"source\": \"lab2\",\r\n  \"communicationId\": 1,\r\n  \"templateId\": 1,\r\n  \"productCode\": 1,\r\n  \"smsCode\": 1234\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/feedback",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
+          "name": "systemName — CRM",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', function () { pm.response.to.have.status(200); });",
+                  "const body = pm.response.json();",
+                  "pm.test('errorCode', function () { pm.expect(body.errorCode).to.eql(''); });",
+                  "pm.test('code', function () { pm.expect(body.code).to.eql('success'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"uid\": \"1\",\r\n  \"operationUid\": \"operation-1\",\r\n  \"systemName\": \"CRM\",\r\n  \"systemTime\": \"2026-10-16T10:00:00Z\",\r\n  \"source\": \"lab2\",\r\n  \"communicationId\": 1,\r\n  \"templateId\": 1,\r\n  \"productCode\": 1,\r\n  \"smsCode\": 1234\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/feedback",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
+          "name": "systemName — WMS",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', function () { pm.response.to.have.status(200); });",
+                  "const body = pm.response.json();",
+                  "pm.test('errorCode', function () { pm.expect(body.errorCode).to.eql(''); });",
+                  "pm.test('code', function () { pm.expect(body.code).to.eql('success'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"uid\": \"1\",\r\n  \"operationUid\": \"operation-1\",\r\n  \"systemName\": \"WMS\",\r\n  \"systemTime\": \"2026-10-16T10:00:00Z\",\r\n  \"source\": \"lab2\",\r\n  \"communicationId\": 1,\r\n  \"templateId\": 1,\r\n  \"productCode\": 1,\r\n  \"smsCode\": 1234\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/feedback",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

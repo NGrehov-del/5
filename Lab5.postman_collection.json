@@ -1,0 +1,1925 @@
+{
+  "info": {
+    "name": "ЛР 5 — Расчёт годовой и квартальной премии",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8082",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Расчёт премий и валидация",
+      "item": [
+        {
+          "name": "01 Успешный запрос",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', function () { pm.response.to.have.status(200); });",
+                  "const body = pm.response.json();",
+                  "pm.test('errorCode', function () { pm.expect(body.errorCode).to.eql(''); });",
+                  "pm.test('code', function () { pm.expect(body.code).to.eql('success'); });",
+                  "const requestBody = JSON.parse(pm.variables.replaceIn(pm.request.body.raw));",
+                  "const coefficients = { DEV: 2.2, HR: 1.2, TL: 2.6, PO: 2.8, TPM: 3, CTO: 3.5 };",
+                  "const year = new Date().getUTCFullYear();",
+                  "const days = (year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0)) ? 366 : 365;",
+                  "const expected = requestBody.salary * requestBody.bonus * days * coefficients[requestBody.position] / requestBody.workDays;",
+                  "pm.test(\"Годовая премия\", () => pm.expect(body.annualBonus).to.be.closeTo(expected, 0.000001));",
+                  "pm.test(\"Квартальная премия\", () => { if ([\"TL\",\"PO\",\"TPM\",\"CTO\"].includes(requestBody.position)) { pm.expect(body.quarterlyBonus).to.be.closeTo(expected / 4, 0.000001); } else { pm.expect(body.quarterlyBonus).to.eql(null); } });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"uid\": \"1\",\r\n  \"operationUid\": \"operation-1\",\r\n  \"systemName\": \"CRM\",\r\n  \"systemTime\": \"2026-10-16T10:00:00Z\",\r\n  \"source\": \"lab2\",\r\n  \"communicationId\": 1,\r\n  \"templateId\": 1,\r\n  \"productCode\": 1,\r\n  \"smsCode\": 1234,\r\n  \"position\": \"HR\",\r\n  \"salary\": 100000,\r\n  \"bonus\": 2,\r\n  \"workDays\": 243\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/feedback",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
+          "name": "uid — поле отсутствует",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 400', function () { pm.response.to.have.status(400); });",
+                  "const body = pm.response.json();",
+                  "pm.test('errorCode', function () { pm.expect(body.errorCode).to.eql('ValidationException'); });",
+                  "pm.test('code', function () { pm.expect(body.code).to.eql('failed'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"operationUid\": \"operation-1\",\r\n  \"systemName\": \"CRM\",\r\n  \"systemTime\": \"2026-10-16T10:00:00Z\",\r\n  \"source\": \"lab2\",\r\n  \"communicationId\": 1,\r\n  \"templateId\": 1,\r\n  \"productCode\": 1,\r\n  \"smsCode\": 1234,\r\n  \"position\": \"HR\",\r\n  \"salary\": 100000,\r\n  \"bonus\": 2,\r\n  \"workDays\": 243\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/feedback",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
+          "name": "uid — null",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 400', function () { pm.response.to.have.status(400); });",
+                  "const body = pm.response.json();",
+                  "pm.test('errorCode', function () { pm.expect(body.errorCode).to.eql('ValidationException'); });",
+                  "pm.test('code', function () { pm.expect(body.code).to.eql('failed'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"uid\": null,\r\n  \"operationUid\": \"operation-1\",\r\n  \"systemName\": \"CRM\",\r\n  \"systemTime\": \"2026-10-16T10:00:00Z\",\r\n  \"source\": \"lab2\",\r\n  \"communicationId\": 1,\r\n  \"templateId\": 1,\r\n  \"productCode\": 1,\r\n  \"smsCode\": 1234,\r\n  \"position\": \"HR\",\r\n  \"salary\": 100000,\r\n  \"bonus\": 2,\r\n  \"workDays\": 243\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/feedback",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
+          "name": "uid — пустая строка",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 400', function () { pm.response.to.have.status(400); });",
+                  "const body = pm.response.json();",
+                  "pm.test('errorCode', function () { pm.expect(body.errorCode).to.eql('ValidationException'); });",
+                  "pm.test('code', function () { pm.expect(body.code).to.eql('failed'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"uid\": \"\",\r\n  \"operationUid\": \"operation-1\",\r\n  \"systemName\": \"CRM\",\r\n  \"systemTime\": \"2026-10-16T10:00:00Z\",\r\n  \"source\": \"lab2\",\r\n  \"communicationId\": 1,\r\n  \"templateId\": 1,\r\n  \"productCode\": 1,\r\n  \"smsCode\": 1234,\r\n  \"position\": \"HR\",\r\n  \"salary\": 100000,\r\n  \"bonus\": 2,\r\n  \"workDays\": 243\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/feedback",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
+          "name": "uid — пробелы",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 400', function () { pm.response.to.have.status(400); });",
+                  "const body = pm.response.json();",
+                  "pm.test('errorCode', function () { pm.expect(body.errorCode).to.eql('ValidationException'); });",
+                  "pm.test('code', function () { pm.expect(body.code).to.eql('failed'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"uid\": \"   \",\r\n  \"operationUid\": \"operation-1\",\r\n  \"systemName\": \"CRM\",\r\n  \"systemTime\": \"2026-10-16T10:00:00Z\",\r\n  \"source\": \"lab2\",\r\n  \"communicationId\": 1,\r\n  \"templateId\": 1,\r\n  \"productCode\": 1,\r\n  \"smsCode\": 1234,\r\n  \"position\": \"HR\",\r\n  \"salary\": 100000,\r\n  \"bonus\": 2,\r\n  \"workDays\": 243\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/feedback",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
+          "name": "operationUid — поле отсутствует",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 400', function () { pm.response.to.have.status(400); });",
+                  "const body = pm.response.json();",
+                  "pm.test('errorCode', function () { pm.expect(body.errorCode).to.eql('ValidationException'); });",
+                  "pm.test('code', function () { pm.expect(body.code).to.eql('failed'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"uid\": \"1\",\r\n  \"systemName\": \"CRM\",\r\n  \"systemTime\": \"2026-10-16T10:00:00Z\",\r\n  \"source\": \"lab2\",\r\n  \"communicationId\": 1,\r\n  \"templateId\": 1,\r\n  \"productCode\": 1,\r\n  \"smsCode\": 1234,\r\n  \"position\": \"HR\",\r\n  \"salary\": 100000,\r\n  \"bonus\": 2,\r\n  \"workDays\": 243\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/feedback",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
+          "name": "operationUid — null",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 400', function () { pm.response.to.have.status(400); });",
+                  "const body = pm.response.json();",
+                  "pm.test('errorCode', function () { pm.expect(body.errorCode).to.eql('ValidationException'); });",
+                  "pm.test('code', function () { pm.expect(body.code).to.eql('failed'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"uid\": \"1\",\r\n  \"operationUid\": null,\r\n  \"systemName\": \"CRM\",\r\n  \"systemTime\": \"2026-10-16T10:00:00Z\",\r\n  \"source\": \"lab2\",\r\n  \"communicationId\": 1,\r\n  \"templateId\": 1,\r\n  \"productCode\": 1,\r\n  \"smsCode\": 1234,\r\n  \"position\": \"HR\",\r\n  \"salary\": 100000,\r\n  \"bonus\": 2,\r\n  \"workDays\": 243\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/feedback",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
+          "name": "operationUid — пустая строка",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 400', function () { pm.response.to.have.status(400); });",
+                  "const body = pm.response.json();",
+                  "pm.test('errorCode', function () { pm.expect(body.errorCode).to.eql('ValidationException'); });",
+                  "pm.test('code', function () { pm.expect(body.code).to.eql('failed'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"uid\": \"1\",\r\n  \"operationUid\": \"\",\r\n  \"systemName\": \"CRM\",\r\n  \"systemTime\": \"2026-10-16T10:00:00Z\",\r\n  \"source\": \"lab2\",\r\n  \"communicationId\": 1,\r\n  \"templateId\": 1,\r\n  \"productCode\": 1,\r\n  \"smsCode\": 1234,\r\n  \"position\": \"HR\",\r\n  \"salary\": 100000,\r\n  \"bonus\": 2,\r\n  \"workDays\": 243\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/feedback",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
+          "name": "operationUid — пробелы",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 400', function () { pm.response.to.have.status(400); });",
+                  "const body = pm.response.json();",
+                  "pm.test('errorCode', function () { pm.expect(body.errorCode).to.eql('ValidationException'); });",
+                  "pm.test('code', function () { pm.expect(body.code).to.eql('failed'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"uid\": \"1\",\r\n  \"operationUid\": \"   \",\r\n  \"systemName\": \"CRM\",\r\n  \"systemTime\": \"2026-10-16T10:00:00Z\",\r\n  \"source\": \"lab2\",\r\n  \"communicationId\": 1,\r\n  \"templateId\": 1,\r\n  \"productCode\": 1,\r\n  \"smsCode\": 1234,\r\n  \"position\": \"HR\",\r\n  \"salary\": 100000,\r\n  \"bonus\": 2,\r\n  \"workDays\": 243\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/feedback",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
+          "name": "systemTime — поле отсутствует",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 400', function () { pm.response.to.have.status(400); });",
+                  "const body = pm.response.json();",
+                  "pm.test('errorCode', function () { pm.expect(body.errorCode).to.eql('ValidationException'); });",
+                  "pm.test('code', function () { pm.expect(body.code).to.eql('failed'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"uid\": \"1\",\r\n  \"operationUid\": \"operation-1\",\r\n  \"systemName\": \"CRM\",\r\n  \"source\": \"lab2\",\r\n  \"communicationId\": 1,\r\n  \"templateId\": 1,\r\n  \"productCode\": 1,\r\n  \"smsCode\": 1234,\r\n  \"position\": \"HR\",\r\n  \"salary\": 100000,\r\n  \"bonus\": 2,\r\n  \"workDays\": 243\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/feedback",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
+          "name": "systemTime — null",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 400', function () { pm.response.to.have.status(400); });",
+                  "const body = pm.response.json();",
+                  "pm.test('errorCode', function () { pm.expect(body.errorCode).to.eql('ValidationException'); });",
+                  "pm.test('code', function () { pm.expect(body.code).to.eql('failed'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"uid\": \"1\",\r\n  \"operationUid\": \"operation-1\",\r\n  \"systemName\": \"CRM\",\r\n  \"systemTime\": null,\r\n  \"source\": \"lab2\",\r\n  \"communicationId\": 1,\r\n  \"templateId\": 1,\r\n  \"productCode\": 1,\r\n  \"smsCode\": 1234,\r\n  \"position\": \"HR\",\r\n  \"salary\": 100000,\r\n  \"bonus\": 2,\r\n  \"workDays\": 243\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/feedback",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
+          "name": "systemTime — пустая строка",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 400', function () { pm.response.to.have.status(400); });",
+                  "const body = pm.response.json();",
+                  "pm.test('errorCode', function () { pm.expect(body.errorCode).to.eql('ValidationException'); });",
+                  "pm.test('code', function () { pm.expect(body.code).to.eql('failed'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"uid\": \"1\",\r\n  \"operationUid\": \"operation-1\",\r\n  \"systemName\": \"CRM\",\r\n  \"systemTime\": \"\",\r\n  \"source\": \"lab2\",\r\n  \"communicationId\": 1,\r\n  \"templateId\": 1,\r\n  \"productCode\": 1,\r\n  \"smsCode\": 1234,\r\n  \"position\": \"HR\",\r\n  \"salary\": 100000,\r\n  \"bonus\": 2,\r\n  \"workDays\": 243\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/feedback",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
+          "name": "systemTime — пробелы",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 400', function () { pm.response.to.have.status(400); });",
+                  "const body = pm.response.json();",
+                  "pm.test('errorCode', function () { pm.expect(body.errorCode).to.eql('ValidationException'); });",
+                  "pm.test('code', function () { pm.expect(body.code).to.eql('failed'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"uid\": \"1\",\r\n  \"operationUid\": \"operation-1\",\r\n  \"systemName\": \"CRM\",\r\n  \"systemTime\": \"   \",\r\n  \"source\": \"lab2\",\r\n  \"communicationId\": 1,\r\n  \"templateId\": 1,\r\n  \"productCode\": 1,\r\n  \"smsCode\": 1234,\r\n  \"position\": \"HR\",\r\n  \"salary\": 100000,\r\n  \"bonus\": 2,\r\n  \"workDays\": 243\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/feedback",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
+          "name": "uid — 32 символа допустимы",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', function () { pm.response.to.have.status(200); });",
+                  "const body = pm.response.json();",
+                  "pm.test('errorCode', function () { pm.expect(body.errorCode).to.eql(''); });",
+                  "pm.test('code', function () { pm.expect(body.code).to.eql('success'); });",
+                  "const requestBody = JSON.parse(pm.variables.replaceIn(pm.request.body.raw));",
+                  "const coefficients = { DEV: 2.2, HR: 1.2, TL: 2.6, PO: 2.8, TPM: 3, CTO: 3.5 };",
+                  "const year = new Date().getUTCFullYear();",
+                  "const days = (year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0)) ? 366 : 365;",
+                  "const expected = requestBody.salary * requestBody.bonus * days * coefficients[requestBody.position] / requestBody.workDays;",
+                  "pm.test(\"Годовая премия\", () => pm.expect(body.annualBonus).to.be.closeTo(expected, 0.000001));",
+                  "pm.test(\"Квартальная премия\", () => { if ([\"TL\",\"PO\",\"TPM\",\"CTO\"].includes(requestBody.position)) { pm.expect(body.quarterlyBonus).to.be.closeTo(expected / 4, 0.000001); } else { pm.expect(body.quarterlyBonus).to.eql(null); } });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"uid\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\r\n  \"operationUid\": \"operation-1\",\r\n  \"systemName\": \"CRM\",\r\n  \"systemTime\": \"2026-10-16T10:00:00Z\",\r\n  \"source\": \"lab2\",\r\n  \"communicationId\": 1,\r\n  \"templateId\": 1,\r\n  \"productCode\": 1,\r\n  \"smsCode\": 1234,\r\n  \"position\": \"HR\",\r\n  \"salary\": 100000,\r\n  \"bonus\": 2,\r\n  \"workDays\": 243\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/feedback",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
+          "name": "uid — 33 символа",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 400', function () { pm.response.to.have.status(400); });",
+                  "const body = pm.response.json();",
+                  "pm.test('errorCode', function () { pm.expect(body.errorCode).to.eql('ValidationException'); });",
+                  "pm.test('code', function () { pm.expect(body.code).to.eql('failed'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"uid\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\r\n  \"operationUid\": \"operation-1\",\r\n  \"systemName\": \"CRM\",\r\n  \"systemTime\": \"2026-10-16T10:00:00Z\",\r\n  \"source\": \"lab2\",\r\n  \"communicationId\": 1,\r\n  \"templateId\": 1,\r\n  \"productCode\": 1,\r\n  \"smsCode\": 1234,\r\n  \"position\": \"HR\",\r\n  \"salary\": 100000,\r\n  \"bonus\": 2,\r\n  \"workDays\": 243\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/feedback",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
+          "name": "operationUid — 32 символа допустимы",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', function () { pm.response.to.have.status(200); });",
+                  "const body = pm.response.json();",
+                  "pm.test('errorCode', function () { pm.expect(body.errorCode).to.eql(''); });",
+                  "pm.test('code', function () { pm.expect(body.code).to.eql('success'); });",
+                  "const requestBody = JSON.parse(pm.variables.replaceIn(pm.request.body.raw));",
+                  "const coefficients = { DEV: 2.2, HR: 1.2, TL: 2.6, PO: 2.8, TPM: 3, CTO: 3.5 };",
+                  "const year = new Date().getUTCFullYear();",
+                  "const days = (year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0)) ? 366 : 365;",
+                  "const expected = requestBody.salary * requestBody.bonus * days * coefficients[requestBody.position] / requestBody.workDays;",
+                  "pm.test(\"Годовая премия\", () => pm.expect(body.annualBonus).to.be.closeTo(expected, 0.000001));",
+                  "pm.test(\"Квартальная премия\", () => { if ([\"TL\",\"PO\",\"TPM\",\"CTO\"].includes(requestBody.position)) { pm.expect(body.quarterlyBonus).to.be.closeTo(expected / 4, 0.000001); } else { pm.expect(body.quarterlyBonus).to.eql(null); } });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"uid\": \"1\",\r\n  \"operationUid\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\r\n  \"systemName\": \"CRM\",\r\n  \"systemTime\": \"2026-10-16T10:00:00Z\",\r\n  \"source\": \"lab2\",\r\n  \"communicationId\": 1,\r\n  \"templateId\": 1,\r\n  \"productCode\": 1,\r\n  \"smsCode\": 1234,\r\n  \"position\": \"HR\",\r\n  \"salary\": 100000,\r\n  \"bonus\": 2,\r\n  \"workDays\": 243\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/feedback",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
+          "name": "operationUid — 33 символа",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 400', function () { pm.response.to.have.status(400); });",
+                  "const body = pm.response.json();",
+                  "pm.test('errorCode', function () { pm.expect(body.errorCode).to.eql('ValidationException'); });",
+                  "pm.test('code', function () { pm.expect(body.code).to.eql('failed'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"uid\": \"1\",\r\n  \"operationUid\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\r\n  \"systemName\": \"CRM\",\r\n  \"systemTime\": \"2026-10-16T10:00:00Z\",\r\n  \"source\": \"lab2\",\r\n  \"communicationId\": 1,\r\n  \"templateId\": 1,\r\n  \"productCode\": 1,\r\n  \"smsCode\": 1234,\r\n  \"position\": \"HR\",\r\n  \"salary\": 100000,\r\n  \"bonus\": 2,\r\n  \"workDays\": 243\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/feedback",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
+          "name": "communicationId — отсутствует",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 400', function () { pm.response.to.have.status(400); });",
+                  "const body = pm.response.json();",
+                  "pm.test('errorCode', function () { pm.expect(body.errorCode).to.eql('ValidationException'); });",
+                  "pm.test('code', function () { pm.expect(body.code).to.eql('failed'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"uid\": \"1\",\r\n  \"operationUid\": \"operation-1\",\r\n  \"systemName\": \"CRM\",\r\n  \"systemTime\": \"2026-10-16T10:00:00Z\",\r\n  \"source\": \"lab2\",\r\n  \"templateId\": 1,\r\n  \"productCode\": 1,\r\n  \"smsCode\": 1234,\r\n  \"position\": \"HR\",\r\n  \"salary\": 100000,\r\n  \"bonus\": 2,\r\n  \"workDays\": 243\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/feedback",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
+          "name": "communicationId — 0",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 400', function () { pm.response.to.have.status(400); });",
+                  "const body = pm.response.json();",
+                  "pm.test('errorCode', function () { pm.expect(body.errorCode).to.eql('ValidationException'); });",
+                  "pm.test('code', function () { pm.expect(body.code).to.eql('failed'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"uid\": \"1\",\r\n  \"operationUid\": \"operation-1\",\r\n  \"systemName\": \"CRM\",\r\n  \"systemTime\": \"2026-10-16T10:00:00Z\",\r\n  \"source\": \"lab2\",\r\n  \"communicationId\": 0,\r\n  \"templateId\": 1,\r\n  \"productCode\": 1,\r\n  \"smsCode\": 1234,\r\n  \"position\": \"HR\",\r\n  \"salary\": 100000,\r\n  \"bonus\": 2,\r\n  \"workDays\": 243\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/feedback",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
+          "name": "communicationId — отрицательное число",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 400', function () { pm.response.to.have.status(400); });",
+                  "const body = pm.response.json();",
+                  "pm.test('errorCode', function () { pm.expect(body.errorCode).to.eql('ValidationException'); });",
+                  "pm.test('code', function () { pm.expect(body.code).to.eql('failed'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"uid\": \"1\",\r\n  \"operationUid\": \"operation-1\",\r\n  \"systemName\": \"CRM\",\r\n  \"systemTime\": \"2026-10-16T10:00:00Z\",\r\n  \"source\": \"lab2\",\r\n  \"communicationId\": -1,\r\n  \"templateId\": 1,\r\n  \"productCode\": 1,\r\n  \"smsCode\": 1234,\r\n  \"position\": \"HR\",\r\n  \"salary\": 100000,\r\n  \"bonus\": 2,\r\n  \"workDays\": 243\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/feedback",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
+          "name": "communicationId — 100001",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 400', function () { pm.response.to.have.status(400); });",
+                  "const body = pm.response.json();",
+                  "pm.test('errorCode', function () { pm.expect(body.errorCode).to.eql('ValidationException'); });",
+                  "pm.test('code', function () { pm.expect(body.code).to.eql('failed'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"uid\": \"1\",\r\n  \"operationUid\": \"operation-1\",\r\n  \"systemName\": \"CRM\",\r\n  \"systemTime\": \"2026-10-16T10:00:00Z\",\r\n  \"source\": \"lab2\",\r\n  \"communicationId\": 100001,\r\n  \"templateId\": 1,\r\n  \"productCode\": 1,\r\n  \"smsCode\": 1234,\r\n  \"position\": \"HR\",\r\n  \"salary\": 100000,\r\n  \"bonus\": 2,\r\n  \"workDays\": 243\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/feedback",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
+          "name": "communicationId — минимум 1",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', function () { pm.response.to.have.status(200); });",
+                  "const body = pm.response.json();",
+                  "pm.test('errorCode', function () { pm.expect(body.errorCode).to.eql(''); });",
+                  "pm.test('code', function () { pm.expect(body.code).to.eql('success'); });",
+                  "const requestBody = JSON.parse(pm.variables.replaceIn(pm.request.body.raw));",
+                  "const coefficients = { DEV: 2.2, HR: 1.2, TL: 2.6, PO: 2.8, TPM: 3, CTO: 3.5 };",
+                  "const year = new Date().getUTCFullYear();",
+                  "const days = (year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0)) ? 366 : 365;",
+                  "const expected = requestBody.salary * requestBody.bonus * days * coefficients[requestBody.position] / requestBody.workDays;",
+                  "pm.test(\"Годовая премия\", () => pm.expect(body.annualBonus).to.be.closeTo(expected, 0.000001));",
+                  "pm.test(\"Квартальная премия\", () => { if ([\"TL\",\"PO\",\"TPM\",\"CTO\"].includes(requestBody.position)) { pm.expect(body.quarterlyBonus).to.be.closeTo(expected / 4, 0.000001); } else { pm.expect(body.quarterlyBonus).to.eql(null); } });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"uid\": \"1\",\r\n  \"operationUid\": \"operation-1\",\r\n  \"systemName\": \"CRM\",\r\n  \"systemTime\": \"2026-10-16T10:00:00Z\",\r\n  \"source\": \"lab2\",\r\n  \"communicationId\": 1,\r\n  \"templateId\": 1,\r\n  \"productCode\": 1,\r\n  \"smsCode\": 1234,\r\n  \"position\": \"HR\",\r\n  \"salary\": 100000,\r\n  \"bonus\": 2,\r\n  \"workDays\": 243\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/feedback",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
+          "name": "communicationId — максимум 100000",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', function () { pm.response.to.have.status(200); });",
+                  "const body = pm.response.json();",
+                  "pm.test('errorCode', function () { pm.expect(body.errorCode).to.eql(''); });",
+                  "pm.test('code', function () { pm.expect(body.code).to.eql('success'); });",
+                  "const requestBody = JSON.parse(pm.variables.replaceIn(pm.request.body.raw));",
+                  "const coefficients = { DEV: 2.2, HR: 1.2, TL: 2.6, PO: 2.8, TPM: 3, CTO: 3.5 };",
+                  "const year = new Date().getUTCFullYear();",
+                  "const days = (year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0)) ? 366 : 365;",
+                  "const expected = requestBody.salary * requestBody.bonus * days * coefficients[requestBody.position] / requestBody.workDays;",
+                  "pm.test(\"Годовая премия\", () => pm.expect(body.annualBonus).to.be.closeTo(expected, 0.000001));",
+                  "pm.test(\"Квартальная премия\", () => { if ([\"TL\",\"PO\",\"TPM\",\"CTO\"].includes(requestBody.position)) { pm.expect(body.quarterlyBonus).to.be.closeTo(expected / 4, 0.000001); } else { pm.expect(body.quarterlyBonus).to.eql(null); } });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"uid\": \"1\",\r\n  \"operationUid\": \"operation-1\",\r\n  \"systemName\": \"CRM\",\r\n  \"systemTime\": \"2026-10-16T10:00:00Z\",\r\n  \"source\": \"lab2\",\r\n  \"communicationId\": 100000,\r\n  \"templateId\": 1,\r\n  \"productCode\": 1,\r\n  \"smsCode\": 1234,\r\n  \"position\": \"HR\",\r\n  \"salary\": 100000,\r\n  \"bonus\": 2,\r\n  \"workDays\": 243\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/feedback",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
+          "name": "Все обязательные поля невалидны",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 400', function () { pm.response.to.have.status(400); });",
+                  "const body = pm.response.json();",
+                  "pm.test('errorCode', function () { pm.expect(body.errorCode).to.eql('ValidationException'); });",
+                  "pm.test('code', function () { pm.expect(body.code).to.eql('failed'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"uid\": \"\",\r\n  \"operationUid\": \"\",\r\n  \"systemName\": \"CRM\",\r\n  \"systemTime\": \"\",\r\n  \"source\": \"lab2\",\r\n  \"communicationId\": 0,\r\n  \"templateId\": 1,\r\n  \"productCode\": 1,\r\n  \"smsCode\": 1234,\r\n  \"position\": \"HR\",\r\n  \"salary\": 100000,\r\n  \"bonus\": 2,\r\n  \"workDays\": 243\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/feedback",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
+          "name": "Оба идентификатора длиннее 32 символов",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 400', function () { pm.response.to.have.status(400); });",
+                  "const body = pm.response.json();",
+                  "pm.test('errorCode', function () { pm.expect(body.errorCode).to.eql('ValidationException'); });",
+                  "pm.test('code', function () { pm.expect(body.code).to.eql('failed'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"uid\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\r\n  \"operationUid\": \"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\",\r\n  \"systemName\": \"CRM\",\r\n  \"systemTime\": \"2026-10-16T10:00:00Z\",\r\n  \"source\": \"lab2\",\r\n  \"communicationId\": 1,\r\n  \"templateId\": 1,\r\n  \"productCode\": 1,\r\n  \"smsCode\": 1234,\r\n  \"position\": \"HR\",\r\n  \"salary\": 100000,\r\n  \"bonus\": 2,\r\n  \"workDays\": 243\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/feedback",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
+          "name": "Необязательные поля отсутствуют",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', function () { pm.response.to.have.status(200); });",
+                  "const body = pm.response.json();",
+                  "pm.test('errorCode', function () { pm.expect(body.errorCode).to.eql(''); });",
+                  "pm.test('code', function () { pm.expect(body.code).to.eql('success'); });",
+                  "const requestBody = JSON.parse(pm.variables.replaceIn(pm.request.body.raw));",
+                  "const coefficients = { DEV: 2.2, HR: 1.2, TL: 2.6, PO: 2.8, TPM: 3, CTO: 3.5 };",
+                  "const year = new Date().getUTCFullYear();",
+                  "const days = (year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0)) ? 366 : 365;",
+                  "const expected = requestBody.salary * requestBody.bonus * days * coefficients[requestBody.position] / requestBody.workDays;",
+                  "pm.test(\"Годовая премия\", () => pm.expect(body.annualBonus).to.be.closeTo(expected, 0.000001));",
+                  "pm.test(\"Квартальная премия\", () => { if ([\"TL\",\"PO\",\"TPM\",\"CTO\"].includes(requestBody.position)) { pm.expect(body.quarterlyBonus).to.be.closeTo(expected / 4, 0.000001); } else { pm.expect(body.quarterlyBonus).to.eql(null); } });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"uid\": \"1\",\r\n  \"operationUid\": \"operation-1\",\r\n  \"systemTime\": \"2026-10-16T10:00:00Z\",\r\n  \"communicationId\": 1,\r\n  \"position\": \"HR\",\r\n  \"salary\": 100000,\r\n  \"bonus\": 2,\r\n  \"workDays\": 243\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/feedback",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
+          "name": "uid 123 — UnsupportedCodeException",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 400', function () { pm.response.to.have.status(400); });",
+                  "const body = pm.response.json();",
+                  "pm.test('errorCode', function () { pm.expect(body.errorCode).to.eql('UnsupportedCodeException'); });",
+                  "pm.test('code', function () { pm.expect(body.code).to.eql('failed'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"uid\": \"123\",\r\n  \"operationUid\": \"operation-1\",\r\n  \"systemName\": \"CRM\",\r\n  \"systemTime\": \"2026-10-16T10:00:00Z\",\r\n  \"source\": \"lab2\",\r\n  \"communicationId\": 1,\r\n  \"templateId\": 1,\r\n  \"productCode\": 1,\r\n  \"smsCode\": 1234,\r\n  \"position\": \"HR\",\r\n  \"salary\": 100000,\r\n  \"bonus\": 2,\r\n  \"workDays\": 243\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/feedback",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
+          "name": "systemName — ERP",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', function () { pm.response.to.have.status(200); });",
+                  "const body = pm.response.json();",
+                  "pm.test('errorCode', function () { pm.expect(body.errorCode).to.eql(''); });",
+                  "pm.test('code', function () { pm.expect(body.code).to.eql('success'); });",
+                  "const requestBody = JSON.parse(pm.variables.replaceIn(pm.request.body.raw));",
+                  "const coefficients = { DEV: 2.2, HR: 1.2, TL: 2.6, PO: 2.8, TPM: 3, CTO: 3.5 };",
+                  "const year = new Date().getUTCFullYear();",
+                  "const days = (year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0)) ? 366 : 365;",
+                  "const expected = requestBody.salary * requestBody.bonus * days * coefficients[requestBody.position] / requestBody.workDays;",
+                  "pm.test(\"Годовая премия\", () => pm.expect(body.annualBonus).to.be.closeTo(expected, 0.000001));",
+                  "pm.test(\"Квартальная премия\", () => { if ([\"TL\",\"PO\",\"TPM\",\"CTO\"].includes(requestBody.position)) { pm.expect(body.quarterlyBonus).to.be.closeTo(expected / 4, 0.000001); } else { pm.expect(body.quarterlyBonus).to.eql(null); } });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"uid\": \"1\",\r\n  \"operationUid\": \"operation-1\",\r\n  \"systemName\": \"ERP\",\r\n  \"systemTime\": \"2026-10-16T10:00:00Z\",\r\n  \"source\": \"lab2\",\r\n  \"communicationId\": 1,\r\n  \"templateId\": 1,\r\n  \"productCode\": 1,\r\n  \"smsCode\": 1234,\r\n  \"position\": \"HR\",\r\n  \"salary\": 100000,\r\n  \"bonus\": 2,\r\n  \"workDays\": 243\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/feedback",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
+          "name": "systemName — CRM",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', function () { pm.response.to.have.status(200); });",
+                  "const body = pm.response.json();",
+                  "pm.test('errorCode', function () { pm.expect(body.errorCode).to.eql(''); });",
+                  "pm.test('code', function () { pm.expect(body.code).to.eql('success'); });",
+                  "const requestBody = JSON.parse(pm.variables.replaceIn(pm.request.body.raw));",
+                  "const coefficients = { DEV: 2.2, HR: 1.2, TL: 2.6, PO: 2.8, TPM: 3, CTO: 3.5 };",
+                  "const year = new Date().getUTCFullYear();",
+                  "const days = (year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0)) ? 366 : 365;",
+                  "const expected = requestBody.salary * requestBody.bonus * days * coefficients[requestBody.position] / requestBody.workDays;",
+                  "pm.test(\"Годовая премия\", () => pm.expect(body.annualBonus).to.be.closeTo(expected, 0.000001));",
+                  "pm.test(\"Квартальная премия\", () => { if ([\"TL\",\"PO\",\"TPM\",\"CTO\"].includes(requestBody.position)) { pm.expect(body.quarterlyBonus).to.be.closeTo(expected / 4, 0.000001); } else { pm.expect(body.quarterlyBonus).to.eql(null); } });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"uid\": \"1\",\r\n  \"operationUid\": \"operation-1\",\r\n  \"systemName\": \"CRM\",\r\n  \"systemTime\": \"2026-10-16T10:00:00Z\",\r\n  \"source\": \"lab2\",\r\n  \"communicationId\": 1,\r\n  \"templateId\": 1,\r\n  \"productCode\": 1,\r\n  \"smsCode\": 1234,\r\n  \"position\": \"HR\",\r\n  \"salary\": 100000,\r\n  \"bonus\": 2,\r\n  \"workDays\": 243\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/feedback",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
+          "name": "systemName — WMS",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', function () { pm.response.to.have.status(200); });",
+                  "const body = pm.response.json();",
+                  "pm.test('errorCode', function () { pm.expect(body.errorCode).to.eql(''); });",
+                  "pm.test('code', function () { pm.expect(body.code).to.eql('success'); });",
+                  "const requestBody = JSON.parse(pm.variables.replaceIn(pm.request.body.raw));",
+                  "const coefficients = { DEV: 2.2, HR: 1.2, TL: 2.6, PO: 2.8, TPM: 3, CTO: 3.5 };",
+                  "const year = new Date().getUTCFullYear();",
+                  "const days = (year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0)) ? 366 : 365;",
+                  "const expected = requestBody.salary * requestBody.bonus * days * coefficients[requestBody.position] / requestBody.workDays;",
+                  "pm.test(\"Годовая премия\", () => pm.expect(body.annualBonus).to.be.closeTo(expected, 0.000001));",
+                  "pm.test(\"Квартальная премия\", () => { if ([\"TL\",\"PO\",\"TPM\",\"CTO\"].includes(requestBody.position)) { pm.expect(body.quarterlyBonus).to.be.closeTo(expected / 4, 0.000001); } else { pm.expect(body.quarterlyBonus).to.eql(null); } });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"uid\": \"1\",\r\n  \"operationUid\": \"operation-1\",\r\n  \"systemName\": \"WMS\",\r\n  \"systemTime\": \"2026-10-16T10:00:00Z\",\r\n  \"source\": \"lab2\",\r\n  \"communicationId\": 1,\r\n  \"templateId\": 1,\r\n  \"productCode\": 1,\r\n  \"smsCode\": 1234,\r\n  \"position\": \"HR\",\r\n  \"salary\": 100000,\r\n  \"bonus\": 2,\r\n  \"workDays\": 243\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/feedback",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
+          "name": "Премия — DEV",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "pm.test('code', () => pm.expect(body.code).to.eql('success'));",
+                  "pm.test('errorCode', () => pm.expect(body.errorCode).to.eql(''));",
+                  "const requestBody = JSON.parse(pm.variables.replaceIn(pm.request.body.raw));",
+                  "const coefficients = { DEV: 2.2, HR: 1.2, TL: 2.6, PO: 2.8, TPM: 3, CTO: 3.5 };",
+                  "const year = new Date().getUTCFullYear();",
+                  "const days = (year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0)) ? 366 : 365;",
+                  "const expected = requestBody.salary * requestBody.bonus * days * coefficients[requestBody.position] / requestBody.workDays;",
+                  "pm.test(\"Годовая премия\", () => pm.expect(body.annualBonus).to.be.closeTo(expected, 0.000001));",
+                  "pm.test(\"Квартальная премия\", () => { if ([\"TL\",\"PO\",\"TPM\",\"CTO\"].includes(requestBody.position)) { pm.expect(body.quarterlyBonus).to.be.closeTo(expected / 4, 0.000001); } else { pm.expect(body.quarterlyBonus).to.eql(null); } });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"uid\": \"1\",\r\n  \"operationUid\": \"operation-1\",\r\n  \"systemName\": \"CRM\",\r\n  \"systemTime\": \"2026-10-16T10:00:00Z\",\r\n  \"source\": \"lab2\",\r\n  \"communicationId\": 1,\r\n  \"templateId\": 1,\r\n  \"productCode\": 1,\r\n  \"smsCode\": 1234,\r\n  \"position\": \"DEV\",\r\n  \"salary\": 100000,\r\n  \"bonus\": 2,\r\n  \"workDays\": 243\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/feedback",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
+          "name": "Премия — TL",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "pm.test('code', () => pm.expect(body.code).to.eql('success'));",
+                  "pm.test('errorCode', () => pm.expect(body.errorCode).to.eql(''));",
+                  "const requestBody = JSON.parse(pm.variables.replaceIn(pm.request.body.raw));",
+                  "const coefficients = { DEV: 2.2, HR: 1.2, TL: 2.6, PO: 2.8, TPM: 3, CTO: 3.5 };",
+                  "const year = new Date().getUTCFullYear();",
+                  "const days = (year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0)) ? 366 : 365;",
+                  "const expected = requestBody.salary * requestBody.bonus * days * coefficients[requestBody.position] / requestBody.workDays;",
+                  "pm.test(\"Годовая премия\", () => pm.expect(body.annualBonus).to.be.closeTo(expected, 0.000001));",
+                  "pm.test(\"Квартальная премия\", () => { if ([\"TL\",\"PO\",\"TPM\",\"CTO\"].includes(requestBody.position)) { pm.expect(body.quarterlyBonus).to.be.closeTo(expected / 4, 0.000001); } else { pm.expect(body.quarterlyBonus).to.eql(null); } });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"uid\": \"1\",\r\n  \"operationUid\": \"operation-1\",\r\n  \"systemName\": \"CRM\",\r\n  \"systemTime\": \"2026-10-16T10:00:00Z\",\r\n  \"source\": \"lab2\",\r\n  \"communicationId\": 1,\r\n  \"templateId\": 1,\r\n  \"productCode\": 1,\r\n  \"smsCode\": 1234,\r\n  \"position\": \"TL\",\r\n  \"salary\": 100000,\r\n  \"bonus\": 2,\r\n  \"workDays\": 243\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/feedback",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
+          "name": "Премия — PO",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "pm.test('code', () => pm.expect(body.code).to.eql('success'));",
+                  "pm.test('errorCode', () => pm.expect(body.errorCode).to.eql(''));",
+                  "const requestBody = JSON.parse(pm.variables.replaceIn(pm.request.body.raw));",
+                  "const coefficients = { DEV: 2.2, HR: 1.2, TL: 2.6, PO: 2.8, TPM: 3, CTO: 3.5 };",
+                  "const year = new Date().getUTCFullYear();",
+                  "const days = (year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0)) ? 366 : 365;",
+                  "const expected = requestBody.salary * requestBody.bonus * days * coefficients[requestBody.position] / requestBody.workDays;",
+                  "pm.test(\"Годовая премия\", () => pm.expect(body.annualBonus).to.be.closeTo(expected, 0.000001));",
+                  "pm.test(\"Квартальная премия\", () => { if ([\"TL\",\"PO\",\"TPM\",\"CTO\"].includes(requestBody.position)) { pm.expect(body.quarterlyBonus).to.be.closeTo(expected / 4, 0.000001); } else { pm.expect(body.quarterlyBonus).to.eql(null); } });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"uid\": \"1\",\r\n  \"operationUid\": \"operation-1\",\r\n  \"systemName\": \"CRM\",\r\n  \"systemTime\": \"2026-10-16T10:00:00Z\",\r\n  \"source\": \"lab2\",\r\n  \"communicationId\": 1,\r\n  \"templateId\": 1,\r\n  \"productCode\": 1,\r\n  \"smsCode\": 1234,\r\n  \"position\": \"PO\",\r\n  \"salary\": 100000,\r\n  \"bonus\": 2,\r\n  \"workDays\": 243\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/feedback",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
+          "name": "Премия — TPM",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "pm.test('code', () => pm.expect(body.code).to.eql('success'));",
+                  "pm.test('errorCode', () => pm.expect(body.errorCode).to.eql(''));",
+                  "const requestBody = JSON.parse(pm.variables.replaceIn(pm.request.body.raw));",
+                  "const coefficients = { DEV: 2.2, HR: 1.2, TL: 2.6, PO: 2.8, TPM: 3, CTO: 3.5 };",
+                  "const year = new Date().getUTCFullYear();",
+                  "const days = (year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0)) ? 366 : 365;",
+                  "const expected = requestBody.salary * requestBody.bonus * days * coefficients[requestBody.position] / requestBody.workDays;",
+                  "pm.test(\"Годовая премия\", () => pm.expect(body.annualBonus).to.be.closeTo(expected, 0.000001));",
+                  "pm.test(\"Квартальная премия\", () => { if ([\"TL\",\"PO\",\"TPM\",\"CTO\"].includes(requestBody.position)) { pm.expect(body.quarterlyBonus).to.be.closeTo(expected / 4, 0.000001); } else { pm.expect(body.quarterlyBonus).to.eql(null); } });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"uid\": \"1\",\r\n  \"operationUid\": \"operation-1\",\r\n  \"systemName\": \"CRM\",\r\n  \"systemTime\": \"2026-10-16T10:00:00Z\",\r\n  \"source\": \"lab2\",\r\n  \"communicationId\": 1,\r\n  \"templateId\": 1,\r\n  \"productCode\": 1,\r\n  \"smsCode\": 1234,\r\n  \"position\": \"TPM\",\r\n  \"salary\": 100000,\r\n  \"bonus\": 2,\r\n  \"workDays\": 243\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/feedback",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
+          "name": "Премия — CTO",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "pm.test('code', () => pm.expect(body.code).to.eql('success'));",
+                  "pm.test('errorCode', () => pm.expect(body.errorCode).to.eql(''));",
+                  "const requestBody = JSON.parse(pm.variables.replaceIn(pm.request.body.raw));",
+                  "const coefficients = { DEV: 2.2, HR: 1.2, TL: 2.6, PO: 2.8, TPM: 3, CTO: 3.5 };",
+                  "const year = new Date().getUTCFullYear();",
+                  "const days = (year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0)) ? 366 : 365;",
+                  "const expected = requestBody.salary * requestBody.bonus * days * coefficients[requestBody.position] / requestBody.workDays;",
+                  "pm.test(\"Годовая премия\", () => pm.expect(body.annualBonus).to.be.closeTo(expected, 0.000001));",
+                  "pm.test(\"Квартальная премия\", () => { if ([\"TL\",\"PO\",\"TPM\",\"CTO\"].includes(requestBody.position)) { pm.expect(body.quarterlyBonus).to.be.closeTo(expected / 4, 0.000001); } else { pm.expect(body.quarterlyBonus).to.eql(null); } });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"uid\": \"1\",\r\n  \"operationUid\": \"operation-1\",\r\n  \"systemName\": \"CRM\",\r\n  \"systemTime\": \"2026-10-16T10:00:00Z\",\r\n  \"source\": \"lab2\",\r\n  \"communicationId\": 1,\r\n  \"templateId\": 1,\r\n  \"productCode\": 1,\r\n  \"smsCode\": 1234,\r\n  \"position\": \"CTO\",\r\n  \"salary\": 100000,\r\n  \"bonus\": 2,\r\n  \"workDays\": 243\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/feedback",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
+          "name": "position — отсутствует",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 400', () => pm.response.to.have.status(400));",
+                  "const body = pm.response.json();",
+                  "pm.test('code', () => pm.expect(body.code).to.eql('failed'));",
+                  "pm.test('errorCode', () => pm.expect(body.errorCode).to.eql('ValidationException'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"uid\": \"1\",\r\n  \"operationUid\": \"operation-1\",\r\n  \"systemName\": \"CRM\",\r\n  \"systemTime\": \"2026-10-16T10:00:00Z\",\r\n  \"source\": \"lab2\",\r\n  \"communicationId\": 1,\r\n  \"templateId\": 1,\r\n  \"productCode\": 1,\r\n  \"smsCode\": 1234,\r\n  \"salary\": 100000,\r\n  \"bonus\": 2,\r\n  \"workDays\": 243\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/feedback",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
+          "name": "position — null",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 400', () => pm.response.to.have.status(400));",
+                  "const body = pm.response.json();",
+                  "pm.test('code', () => pm.expect(body.code).to.eql('failed'));",
+                  "pm.test('errorCode', () => pm.expect(body.errorCode).to.eql('ValidationException'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"uid\": \"1\",\r\n  \"operationUid\": \"operation-1\",\r\n  \"systemName\": \"CRM\",\r\n  \"systemTime\": \"2026-10-16T10:00:00Z\",\r\n  \"source\": \"lab2\",\r\n  \"communicationId\": 1,\r\n  \"templateId\": 1,\r\n  \"productCode\": 1,\r\n  \"smsCode\": 1234,\r\n  \"position\": null,\r\n  \"salary\": 100000,\r\n  \"bonus\": 2,\r\n  \"workDays\": 243\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/feedback",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
+          "name": "salary — отсутствует",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 400', () => pm.response.to.have.status(400));",
+                  "const body = pm.response.json();",
+                  "pm.test('code', () => pm.expect(body.code).to.eql('failed'));",
+                  "pm.test('errorCode', () => pm.expect(body.errorCode).to.eql('ValidationException'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"uid\": \"1\",\r\n  \"operationUid\": \"operation-1\",\r\n  \"systemName\": \"CRM\",\r\n  \"systemTime\": \"2026-10-16T10:00:00Z\",\r\n  \"source\": \"lab2\",\r\n  \"communicationId\": 1,\r\n  \"templateId\": 1,\r\n  \"productCode\": 1,\r\n  \"smsCode\": 1234,\r\n  \"position\": \"HR\",\r\n  \"bonus\": 2,\r\n  \"workDays\": 243\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/feedback",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
+          "name": "salary — null",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 400', () => pm.response.to.have.status(400));",
+                  "const body = pm.response.json();",
+                  "pm.test('code', () => pm.expect(body.code).to.eql('failed'));",
+                  "pm.test('errorCode', () => pm.expect(body.errorCode).to.eql('ValidationException'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"uid\": \"1\",\r\n  \"operationUid\": \"operation-1\",\r\n  \"systemName\": \"CRM\",\r\n  \"systemTime\": \"2026-10-16T10:00:00Z\",\r\n  \"source\": \"lab2\",\r\n  \"communicationId\": 1,\r\n  \"templateId\": 1,\r\n  \"productCode\": 1,\r\n  \"smsCode\": 1234,\r\n  \"position\": \"HR\",\r\n  \"salary\": null,\r\n  \"bonus\": 2,\r\n  \"workDays\": 243\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/feedback",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
+          "name": "bonus — отсутствует",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 400', () => pm.response.to.have.status(400));",
+                  "const body = pm.response.json();",
+                  "pm.test('code', () => pm.expect(body.code).to.eql('failed'));",
+                  "pm.test('errorCode', () => pm.expect(body.errorCode).to.eql('ValidationException'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"uid\": \"1\",\r\n  \"operationUid\": \"operation-1\",\r\n  \"systemName\": \"CRM\",\r\n  \"systemTime\": \"2026-10-16T10:00:00Z\",\r\n  \"source\": \"lab2\",\r\n  \"communicationId\": 1,\r\n  \"templateId\": 1,\r\n  \"productCode\": 1,\r\n  \"smsCode\": 1234,\r\n  \"position\": \"HR\",\r\n  \"salary\": 100000,\r\n  \"workDays\": 243\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/feedback",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
+          "name": "bonus — null",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 400', () => pm.response.to.have.status(400));",
+                  "const body = pm.response.json();",
+                  "pm.test('code', () => pm.expect(body.code).to.eql('failed'));",
+                  "pm.test('errorCode', () => pm.expect(body.errorCode).to.eql('ValidationException'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"uid\": \"1\",\r\n  \"operationUid\": \"operation-1\",\r\n  \"systemName\": \"CRM\",\r\n  \"systemTime\": \"2026-10-16T10:00:00Z\",\r\n  \"source\": \"lab2\",\r\n  \"communicationId\": 1,\r\n  \"templateId\": 1,\r\n  \"productCode\": 1,\r\n  \"smsCode\": 1234,\r\n  \"position\": \"HR\",\r\n  \"salary\": 100000,\r\n  \"bonus\": null,\r\n  \"workDays\": 243\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/feedback",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
+          "name": "workDays — отсутствует",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 400', () => pm.response.to.have.status(400));",
+                  "const body = pm.response.json();",
+                  "pm.test('code', () => pm.expect(body.code).to.eql('failed'));",
+                  "pm.test('errorCode', () => pm.expect(body.errorCode).to.eql('ValidationException'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"uid\": \"1\",\r\n  \"operationUid\": \"operation-1\",\r\n  \"systemName\": \"CRM\",\r\n  \"systemTime\": \"2026-10-16T10:00:00Z\",\r\n  \"source\": \"lab2\",\r\n  \"communicationId\": 1,\r\n  \"templateId\": 1,\r\n  \"productCode\": 1,\r\n  \"smsCode\": 1234,\r\n  \"position\": \"HR\",\r\n  \"salary\": 100000,\r\n  \"bonus\": 2\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/feedback",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
+          "name": "workDays — null",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 400', () => pm.response.to.have.status(400));",
+                  "const body = pm.response.json();",
+                  "pm.test('code', () => pm.expect(body.code).to.eql('failed'));",
+                  "pm.test('errorCode', () => pm.expect(body.errorCode).to.eql('ValidationException'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"uid\": \"1\",\r\n  \"operationUid\": \"operation-1\",\r\n  \"systemName\": \"CRM\",\r\n  \"systemTime\": \"2026-10-16T10:00:00Z\",\r\n  \"source\": \"lab2\",\r\n  \"communicationId\": 1,\r\n  \"templateId\": 1,\r\n  \"productCode\": 1,\r\n  \"smsCode\": 1234,\r\n  \"position\": \"HR\",\r\n  \"salary\": 100000,\r\n  \"bonus\": 2,\r\n  \"workDays\": null\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/feedback",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
+          "name": "salary — 0",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 400', () => pm.response.to.have.status(400));",
+                  "const body = pm.response.json();",
+                  "pm.test('code', () => pm.expect(body.code).to.eql('failed'));",
+                  "pm.test('errorCode', () => pm.expect(body.errorCode).to.eql('ValidationException'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"uid\": \"1\",\r\n  \"operationUid\": \"operation-1\",\r\n  \"systemName\": \"CRM\",\r\n  \"systemTime\": \"2026-10-16T10:00:00Z\",\r\n  \"source\": \"lab2\",\r\n  \"communicationId\": 1,\r\n  \"templateId\": 1,\r\n  \"productCode\": 1,\r\n  \"smsCode\": 1234,\r\n  \"position\": \"HR\",\r\n  \"salary\": 0,\r\n  \"bonus\": 2,\r\n  \"workDays\": 243\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/feedback",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
+          "name": "salary — отрицательный оклад",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 400', () => pm.response.to.have.status(400));",
+                  "const body = pm.response.json();",
+                  "pm.test('code', () => pm.expect(body.code).to.eql('failed'));",
+                  "pm.test('errorCode', () => pm.expect(body.errorCode).to.eql('ValidationException'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"uid\": \"1\",\r\n  \"operationUid\": \"operation-1\",\r\n  \"systemName\": \"CRM\",\r\n  \"systemTime\": \"2026-10-16T10:00:00Z\",\r\n  \"source\": \"lab2\",\r\n  \"communicationId\": 1,\r\n  \"templateId\": 1,\r\n  \"productCode\": 1,\r\n  \"smsCode\": 1234,\r\n  \"position\": \"HR\",\r\n  \"salary\": -100,\r\n  \"bonus\": 2,\r\n  \"workDays\": 243\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/feedback",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
+          "name": "bonus — отрицательный множитель",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 400', () => pm.response.to.have.status(400));",
+                  "const body = pm.response.json();",
+                  "pm.test('code', () => pm.expect(body.code).to.eql('failed'));",
+                  "pm.test('errorCode', () => pm.expect(body.errorCode).to.eql('ValidationException'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"uid\": \"1\",\r\n  \"operationUid\": \"operation-1\",\r\n  \"systemName\": \"CRM\",\r\n  \"systemTime\": \"2026-10-16T10:00:00Z\",\r\n  \"source\": \"lab2\",\r\n  \"communicationId\": 1,\r\n  \"templateId\": 1,\r\n  \"productCode\": 1,\r\n  \"smsCode\": 1234,\r\n  \"position\": \"HR\",\r\n  \"salary\": 100000,\r\n  \"bonus\": -1,\r\n  \"workDays\": 243\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/feedback",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
+          "name": "bonus — 0",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "pm.test('code', () => pm.expect(body.code).to.eql('success'));",
+                  "pm.test('errorCode', () => pm.expect(body.errorCode).to.eql(''));",
+                  "const requestBody = JSON.parse(pm.variables.replaceIn(pm.request.body.raw));",
+                  "const coefficients = { DEV: 2.2, HR: 1.2, TL: 2.6, PO: 2.8, TPM: 3, CTO: 3.5 };",
+                  "const year = new Date().getUTCFullYear();",
+                  "const days = (year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0)) ? 366 : 365;",
+                  "const expected = requestBody.salary * requestBody.bonus * days * coefficients[requestBody.position] / requestBody.workDays;",
+                  "pm.test(\"Годовая премия\", () => pm.expect(body.annualBonus).to.be.closeTo(expected, 0.000001));",
+                  "pm.test(\"Квартальная премия\", () => { if ([\"TL\",\"PO\",\"TPM\",\"CTO\"].includes(requestBody.position)) { pm.expect(body.quarterlyBonus).to.be.closeTo(expected / 4, 0.000001); } else { pm.expect(body.quarterlyBonus).to.eql(null); } });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"uid\": \"1\",\r\n  \"operationUid\": \"operation-1\",\r\n  \"systemName\": \"CRM\",\r\n  \"systemTime\": \"2026-10-16T10:00:00Z\",\r\n  \"source\": \"lab2\",\r\n  \"communicationId\": 1,\r\n  \"templateId\": 1,\r\n  \"productCode\": 1,\r\n  \"smsCode\": 1234,\r\n  \"position\": \"HR\",\r\n  \"salary\": 100000,\r\n  \"bonus\": 0,\r\n  \"workDays\": 243\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/feedback",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
+          "name": "workDays — 0",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 400', () => pm.response.to.have.status(400));",
+                  "const body = pm.response.json();",
+                  "pm.test('code', () => pm.expect(body.code).to.eql('failed'));",
+                  "pm.test('errorCode', () => pm.expect(body.errorCode).to.eql('ValidationException'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"uid\": \"1\",\r\n  \"operationUid\": \"operation-1\",\r\n  \"systemName\": \"CRM\",\r\n  \"systemTime\": \"2026-10-16T10:00:00Z\",\r\n  \"source\": \"lab2\",\r\n  \"communicationId\": 1,\r\n  \"templateId\": 1,\r\n  \"productCode\": 1,\r\n  \"smsCode\": 1234,\r\n  \"position\": \"HR\",\r\n  \"salary\": 100000,\r\n  \"bonus\": 2,\r\n  \"workDays\": 0\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/feedback",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
+          "name": "workDays — 367",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 400', () => pm.response.to.have.status(400));",
+                  "const body = pm.response.json();",
+                  "pm.test('code', () => pm.expect(body.code).to.eql('failed'));",
+                  "pm.test('errorCode', () => pm.expect(body.errorCode).to.eql('ValidationException'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"uid\": \"1\",\r\n  \"operationUid\": \"operation-1\",\r\n  \"systemName\": \"CRM\",\r\n  \"systemTime\": \"2026-10-16T10:00:00Z\",\r\n  \"source\": \"lab2\",\r\n  \"communicationId\": 1,\r\n  \"templateId\": 1,\r\n  \"productCode\": 1,\r\n  \"smsCode\": 1234,\r\n  \"position\": \"HR\",\r\n  \"salary\": 100000,\r\n  \"bonus\": 2,\r\n  \"workDays\": 367\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/feedback",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        },
+        {
+          "name": "workDays — 366",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 400', () => pm.response.to.have.status(400));",
+                  "const body = pm.response.json();",
+                  "pm.test('code', () => pm.expect(body.code).to.eql('failed'));",
+                  "pm.test('errorCode', () => pm.expect(body.errorCode).to.eql('ValidationException'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"uid\": \"1\",\r\n  \"operationUid\": \"operation-1\",\r\n  \"systemName\": \"CRM\",\r\n  \"systemTime\": \"2026-10-16T10:00:00Z\",\r\n  \"source\": \"lab2\",\r\n  \"communicationId\": 1,\r\n  \"templateId\": 1,\r\n  \"productCode\": 1,\r\n  \"smsCode\": 1234,\r\n  \"position\": \"HR\",\r\n  \"salary\": 100000,\r\n  \"bonus\": 2,\r\n  \"workDays\": 366\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/feedback",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}
